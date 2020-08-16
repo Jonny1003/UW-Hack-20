@@ -13,16 +13,16 @@ public class MapSocket {
             .version(HttpClient.Version.HTTP_1_1)
             .build();
     
-    private String coordinateString = "";
-    private String coordinateString2 = "";
+    private String coordinateString = "\n";
+    private String coordinateString2 = "10\n";
 
     public static void main(String[] args) throws Exception {
 
         MapSocket obj = new MapSocket();
 
         System.out.println("Testing 1 - Send Http GET request");
-        obj.sendGetPopulationInfo();
-        LinkedList<int[]> L = obj.getCoordinates();
+        obj.sendGetDensityInfo();
+        LinkedList<int[]> L = obj.getDensityCoordinates();
         while (!L.isEmpty()){
             int[] coord = L.pop();
             System.out.println("("+coord[0]+", "+coord[1]+", "+coord[2]+")");
@@ -84,12 +84,13 @@ public class MapSocket {
         int[] coord = new int[3];
         boolean second = false;
         int j = 0;
-        while (j != '\n'){
+        while (coordinateString2.charAt(j) != '\n'){
             char c = coordinateString2.charAt(j);
             j += 1;
-            buf += j;
+            buf += c;
         }
         int maxRad = Integer.parseInt(buf);
+        System.out.println(maxRad);
         buf = "";
         for (int i = j+1; i < coordinateString2.length(); i++){
             char c = coordinateString2.charAt(i);
@@ -105,7 +106,7 @@ public class MapSocket {
                 second = false;
             } else if (c == ',' && !second){
                 try {
-                    coord[0] = 30 * (int) ((maxRad+0.0) / Integer.parseInt(buf));
+                    coord[0] = 50 * (int) ((Integer.parseInt(buf) + 0.0) / (maxRad+0.0));
                 } catch (Exception e) {
                     return out;
                 }
@@ -146,7 +147,7 @@ public class MapSocket {
                 second = false;
             } else if (c == ',' && !second){
                 try {
-                    coord[0] = Integer.parseInt(buf);
+                    coord[0] = 10;
                 } catch (Exception e) {
                     return out;
                 }
