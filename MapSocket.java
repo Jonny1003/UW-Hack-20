@@ -14,6 +14,7 @@ public class MapSocket {
             .build();
     
     private String coordinateString = "";
+    private String coordinateString2 = "";
 
     public static void main(String[] args) throws Exception {
 
@@ -50,6 +51,78 @@ public class MapSocket {
         coordinateString = response.body();
         System.out.println(response.body());
         
+    }
+
+    // request population information from server 
+    public void sendGetDensityInfo() throws Exception {
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .GET()
+                .uri(URI.create("https://dubhacks2020.wl.r.appspot.com/info4"))
+                .setHeader("User-Agent", "Java 11 HttpClient Bot")
+                .build();
+        System.out.println("Request String: "+request.toString());
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+
+        // print status code
+        System.out.println(response.statusCode());
+
+        // print response body
+        System.out.println(response.headers());
+        System.out.println("Data:");
+        coordinateString2 = response.body();
+        System.out.println(response.body());
+    }
+
+    // Parses internal CSV string into linked list of coordinate points
+    public LinkedList<int[]> getDensityCoordinates(){
+        // process data 
+        String buf = "";
+        LinkedList<int[]> out = new LinkedList<int[]>();
+        int[] coord = new int[3];
+        boolean second = false;
+        int j = 0;
+        while (j != '\n'){
+            char c = coordinateString2.charAt(j);
+            j += 1;
+            buf += j;
+        }
+        int maxRad = Integer.parseInt(buf);
+        buf = "";
+        for (int i = j+1; i < coordinateString2.length(); i++){
+            char c = coordinateString2.charAt(i);
+            if (Character.isDigit(c) || c == '-'){
+                buf += c;
+            } else if (c == ',' && second){
+                try {
+                    coord[1] = Integer.parseInt(buf);
+                } catch (Exception e) {
+                    return out;
+                }
+                buf = "";
+                second = false;
+            } else if (c == ',' && !second){
+                try {
+                    coord[0] = 30 * (int) ((maxRad+0.0) / Integer.parseInt(buf));
+                } catch (Exception e) {
+                    return out;
+                }
+                buf = "";
+                second = true;
+            } else if (c == '\n'){
+                try {
+                    coord[2] = Integer.parseInt(buf);
+                } catch (Exception e) {
+                    return out;
+                }
+                buf = "";
+                out.push(coord);
+                coord = new int[3];
+            } 
+        }
+        return out;
     }
 
     // Parses internal CSV string into linked list of coordinate points
